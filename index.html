@@ -96,18 +96,27 @@
             const before = new Date();
             const req = new XMLHttpRequest();
             req.open(method, url, true);
-            req.responseType = "text";
+            req.responseType = "document";
             req.onload = (event) => {
                 const response = event.currentTarget.response;
 
-                preview(response);
-                // console.dir(response);
+                const head = response.head.outerHTML;
+                const body = response.body.outerHTML;
+
+                const iframeHTML = `<!DOCTYPE html><html>${head}${body}</html>`;
+
+                preview(iframeHTML);
+
+                // console.dir(head);
             };
-            req.onreadystatechange = function () {
+            req.onreadystatechange = function (e) {
                 if (this.readyState == 4 && this.status == 200) {
                     const now = new Date();
                     const diff = now - before;
-                    updateData(diff);
+                    const title = e.currentTarget.response.title;
+                    updateData(title, diff);
+
+                    // console.log(e);
                 }
             };
             req.onerror = (event) => {
@@ -119,10 +128,15 @@
             // console.log(req);
         }
 
-        function updateData(diff) {
+        function updateData(title, diff) {
             const dataDiv = document.getElementById("dataShow");
 
             let colHTML = `<div class="col-4">
+                <div class="card">
+                            <div class="card-body">${title}</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
                 <div class="card">
                             <div class="card-body">Took ${diff} milliseconds</div>
                             </div>
@@ -133,8 +147,11 @@
 
 
         function preview(body) {
-            const previewSource = document.getElementById("previewSource");
-            previewSource.src = "data:text/html;charset=utf-8," + escape(body);
+
+            const blob = new Blob([body], {type: "text/html;charset=utf-8"});
+
+            // console.log(blob);
+            previewSource.src = URL.createObjectURL(blob);
         }
 
 
