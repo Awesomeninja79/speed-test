@@ -122,7 +122,7 @@
             };
             req.onerror = (event) => {
                 console.log(event);
-                alert(event.type);
+                alert(event.type + ": CORS ERROR");
             };
 
             req.send();
